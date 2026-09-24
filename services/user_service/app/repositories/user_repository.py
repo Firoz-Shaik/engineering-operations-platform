@@ -1,24 +1,34 @@
 import asyncio
 from datetime import datetime
 from uuid import UUID
+from typing import Optional
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.user import User, UserRoles
+from app.models.user import Role, User, UserRoles
 from app.schemas.user import UserCreate
 
 from app.core.security import get_password_hash
 
 class UserRepository:
-    async def get_all_users(self, db: AsyncSession) -> list[User]:
-        result = await db.execute(
+    async def get_all_users(self, db: AsyncSession, *, role: Optional[str], skip: int, limit: int) -> list[User]:
+        stmt = (
             select(User)
             .options(selectinload(User.user_roles).selectinload(UserRoles.role))
             .where(User.deleted_at.is_(None))
         )
+        if role:
+            stmt = (
+                stmt.join(UserRoles, UserRoles.user_id == User.id)
+                .join(Role, Role.id == UserRoles.role_id)
+                .where(Role.name == role.strip().lower())
+            )
+
+        stmt = stmt.order_by(User.created_at).offset(skip).limit(limit)
+        result = await db.execute(stmt)
         return result.scalars().all()
     
     async def get_user_by_email(self, db: AsyncSession, *, email: str) -> User | None:

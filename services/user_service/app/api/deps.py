@@ -14,7 +14,7 @@ from app.services.user_service import user_service
 
 # This defines the security scheme for getting a bearer token.
 # tokenUrl points to the endpoint where the client can fetch a token.
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user_service/v1/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user_service/v1/auth/token")
 
 async def get_current_user(
     db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)

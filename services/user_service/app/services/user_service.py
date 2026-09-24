@@ -7,11 +7,15 @@ from app.models.user import User
 from app.schemas.user import UserCreate
 from app.repositories.user_repository import user_repository
 from app.services.role_service import role_service
+from typing import Optional
 
 class UserService:
-    async def get_all_users(self, db: AsyncSession) -> list[User]:
-        return await user_repository.get_all_users(db)
-
+    async def get_all_users(self, db: AsyncSession, *, role: Optional[str], skip: int, limit: int) -> list[User]:
+        users = await user_repository.get_all_users(db, role=role, skip=skip, limit=limit)
+        if not users:
+            return []
+        return users
+    
     async def get_user_by_email(self, db: AsyncSession, *, email: str) -> User | None:
         user = await user_repository.get_user_by_email(db, email=email)
         return user

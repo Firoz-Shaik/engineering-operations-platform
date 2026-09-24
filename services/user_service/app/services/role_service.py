@@ -37,5 +37,9 @@ class RoleService:
             db, user=user, role_name=role_name
         )
 
+    async def remove_role_from_user(
+        self, db: AsyncSession, *, user: User, role_name: str
+    ) -> Role:
+        return await role_repository.remove_role_from_user(db, user=user, role_name=role_name)
 
 role_service = RoleService()

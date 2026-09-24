@@ -5,9 +5,9 @@ app = FastAPI(
     title="User Service",
     description="User Service",
     version="1.0.0",
-    docs_url="/user_service/api/docs",
-    redoc_url="/user_service/api/redoc",
-    openapi_url="/user_service/api/openapi.json",
+    docs_url="/api/v1/users/docs",
+    redoc_url="/api/v1/users/redoc",
+    openapi_url="/api/v1/users/openapi.json",
 )
 
 

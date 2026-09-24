@@ -79,5 +79,25 @@ class RoleRepository:
         await db.refresh(assignment, ["role"])
         return assignment.role
 
+    async def remove_role_from_user(
+            self, db: AsyncSession, *, user: User, role_name: str
+    ) -> Role:
+        normalized_name = role_name.strip().lower()
+        role = await self.get_by_name(db, name=normalized_name)
+        if role is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Role '{normalized_name}' does not exist",
+            )
+        if not await self.has_assignment(db, user_id=user.id, role_id=role.id):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Role '{normalized_name}' is not assigned to this user",
+            )
 
+        assignment = UserRoles(user_id=user.id, role_id=role.id)
+        db.delete(assignment)
+        await db.commit()
+        return role
+    
 role_repository = RoleRepository()
