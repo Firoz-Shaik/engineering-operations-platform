@@ -36,7 +36,11 @@ def get_password_hash(password: str) -> str:
     return bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode("utf-8")
 
 
-def create_access_token(subject: str, expires_delta: timedelta | None = None) -> str:
+def create_access_token(
+    subject: str,
+    expires_delta: timedelta | None = None,
+    claims: dict[str, Any] | None = None,
+) -> str:
     """
     Create a JWT access token.
     `subject` is stored in the 'sub' claim (we use email).
@@ -47,6 +51,8 @@ def create_access_token(subject: str, expires_delta: timedelta | None = None) ->
         else timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     to_encode: dict[str, Any] = {"exp": expire, "sub": str(subject)}
+    if claims:
+        to_encode.update(claims)
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
 
 

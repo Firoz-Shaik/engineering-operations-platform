@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    INTERNAL_API_KEY: str = "local-dev-internal-key"
+    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,http://localhost:8001,http://127.0.0.1:8001"
 
     model_config = {
         "env_file": ".env",

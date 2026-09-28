@@ -1,11 +1,14 @@
 from typing import Annotated
+import secrets
 from fastapi import Depends, HTTPException, status
+from fastapi import Header
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import ValidationError
 
 from app.core import security
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.user import User
 from app.schemas.token import TokenData
@@ -14,7 +17,7 @@ from app.services.user_service import user_service
 
 # This defines the security scheme for getting a bearer token.
 # tokenUrl points to the endpoint where the client can fetch a token.
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user_service/v1/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 async def get_current_user(
     db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)
@@ -35,10 +38,16 @@ async def get_current_user(
         payload = security.jwt.decode(
             token, security.settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
-        email: str = payload.get("sub")
-        if email is None:
+        subject = payload.get("sub")
+        if not isinstance(subject, str):
             raise credentials_exception
-        token_data = TokenData(email=email)
+        token_data = TokenData.model_validate(
+            {
+                "id": subject,
+                "email": payload.get("email"),
+                "roles": payload.get("roles", []),
+            }
+        )
     except (JWTError, ValidationError):
         raise credentials_exception
         
@@ -65,3 +74,16 @@ async def get_admin_user(current_user: CurrentUser) -> User:
     return current_user
 
 AdminUser = Annotated[User, Depends(get_admin_user)]
+
+
+async def require_internal_api_key(
+    api_key: str = Header(alias="X-Internal-API-Key"),
+) -> None:
+    if not secrets.compare_digest(api_key, settings.INTERNAL_API_KEY):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid internal service credentials",
+        )
+
+
+InternalService = Annotated[None, Depends(require_internal_api_key)]

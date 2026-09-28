@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, status, HTTPException, Query
 from app.services.user_service import user_service
 from app.schemas.user import RoleAssignmentRequest, RoleRead, User, UserCreate, UserUpdate
-from app.api.deps import AdminUser, DBSession, CurrentUser
+from app.api.deps import AdminUser, DBSession, CurrentUser, InternalService
 from pydantic import EmailStr
 from app.services.role_service import role_service
 from typing import Optional
@@ -68,6 +68,18 @@ async def get_user_by_email(
     current_user: AdminUser,
 ):
     user = await user_service.get_user_by_email(db, email=email)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user
+
+
+@router.get("/internal/{user_id}", response_model=User, status_code=status.HTTP_200_OK)
+async def get_user_for_internal_service(
+    user_id: UUID,
+    db: DBSession,
+    _internal_service: InternalService,
+):
+    user = await user_service.get_user_by_id(db, user_id=user_id)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user
