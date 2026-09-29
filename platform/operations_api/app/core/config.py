@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     USER_SERVICE_TOKEN_URL: str = "http://127.0.0.1:8002/api/v1/auth/token"
     USER_SERVICE_URL: str = "http://127.0.0.1:8002"
+    ORDER_SERVICE_URL: str = "http://127.0.0.1:8003"
+    NOTIFICATION_SERVICE_URL: str = "http://127.0.0.1:8004"
+    REDIS_URL: str = "redis://127.0.0.1:6379/3"
+    DEPLOYMENT_MAX_RETRIES: int = 3
     INTERNAL_API_KEY: str = "local-dev-internal-key"
     CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173"
     

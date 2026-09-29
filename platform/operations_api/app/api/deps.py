@@ -5,11 +5,14 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel, EmailStr, Field, ValidationError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.database import get_db
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=settings.USER_SERVICE_TOKEN_URL)
+DBSession = Annotated[AsyncSession, Depends(get_db)]
 
 
 class TokenUser(BaseModel):
