@@ -1,13 +1,18 @@
 import datetime
 import uuid
 from typing import List, Optional
-from sqlalchemy import String, DateTime, ForeignKey, Integer, func, Numeric
+from sqlalchemy import Index, String, DateTime, ForeignKey, Integer, func, Numeric
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
 
 class Order(Base):
     __tablename__ = "orders"
+    __table_args__ = (
+        Index("ix_orders_created_id", "created_at", "id"),
+        Index("ix_orders_status_created_id", "status", "created_at", "id"),
+        Index("ix_orders_user_created_id", "user_id", "created_at", "id"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
@@ -30,6 +35,7 @@ class Order(Base):
 
 class OrderItem(Base):
     __tablename__ = "order_items"
+    __table_args__ = (Index("ix_order_items_order_id", "order_id"),)
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     order_id: Mapped[uuid.UUID] = mapped_column(
