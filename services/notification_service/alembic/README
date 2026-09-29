@@ -1,0 +1,2 @@
+Notification Service migrations are managed independently from the other services.
+Run `alembic upgrade head` from this directory after configuring DATABASE_URL.
