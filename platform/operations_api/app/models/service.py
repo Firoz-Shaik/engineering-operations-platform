@@ -1,12 +1,13 @@
 import uuid
 from typing import List
 from app.core.database import Base
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import Index, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 class Service(Base):
     __tablename__ = "services"
+    __table_args__ = (Index("ix_services_environment_id", "environment_id"),)
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String, nullable=False)

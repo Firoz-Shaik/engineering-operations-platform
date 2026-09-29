@@ -102,9 +102,19 @@ async def update_user(
     user: UserUpdate,
     current_user: CurrentUser,
 ):
-    user = await user_service.update_user(db, user_id=user_id, obj_in=user)
+    if current_user.id != user_id and not any(
+        role.lower() in {"admin", "superuser"} for role in current_user.roles
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Users can only update their own profile",
+        )
 
-    return user
+    updated_user = await user_service.update_user(db, user_id=user_id, obj_in=user)
+    if updated_user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    return updated_user
 
 @router.delete("/{user_id}", response_model=User, status_code=status.HTTP_200_OK)
 async def delete_user(
