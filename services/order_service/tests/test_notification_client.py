@@ -3,6 +3,7 @@ import pytest
 from uuid import uuid4
 
 from app.clients import notification_service_client as client_module
+from app.clients.circuit_breaker import AsyncCircuitBreaker
 from app.clients.user_service_client import UserServiceUser
 
 
@@ -72,3 +73,19 @@ async def test_notification_client_gracefully_returns_false_after_retries(monkey
 
     assert queued is False
     assert len(FakeAsyncClient.requests) == 3
+
+
+@pytest.mark.asyncio
+async def test_circuit_breaker_allows_only_one_half_open_probe():
+    breaker = AsyncCircuitBreaker(failure_threshold=2, reset_timeout=0)
+
+    assert await breaker.allow_request() is True
+    await breaker.record_failure()
+    assert await breaker.allow_request() is True
+    await breaker.record_failure()
+    assert breaker.state == "open"
+
+    assert await breaker.allow_request() is True
+    assert await breaker.allow_request() is False
+    await breaker.record_success()
+    assert breaker.state == "closed"
