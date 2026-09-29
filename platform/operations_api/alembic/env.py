@@ -22,6 +22,7 @@ from app.core.database import Base
 from app.core.config import settings
 # Import all the models to ensure they are registered with the Base metadata
 from app.models.service import Service, Environment
+from app.models.deployment import Deployment
 
 # This is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
